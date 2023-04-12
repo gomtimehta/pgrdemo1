@@ -10,7 +10,7 @@ on:
 
 env:
   DOTNET_VERSION: '6.0.x'
-  WEBAPP_NAME: 'pgrdemoapp1'
+  WEBAPP_NAME: 'pgrdemo1app'
   WEBAPP_PACKAHE_PATH: '.'
   
 #Create the jobs
