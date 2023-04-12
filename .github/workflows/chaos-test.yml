@@ -1,0 +1,34 @@
+name: ChaosTestingWorkflow
+on: 
+  workflow_dispatch:
+    branches:
+      - main
+env:
+  RESOURCE_GROUP_NAME: 'GomtiRG'
+  CHAOS_EXPERIMENT_NAME: 'pgrexperimentdemo1'
+
+
+    
+jobs:
+  chaostest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Login to Azure
+        uses: azure/login@v1
+        continue-on-error: false
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          
+      - name: Checkout GitHubActions
+        uses: actions/checkout@v3
+
+      - name: 'GetChaosExperimentResourceId'
+        uses: azure/CLI@v1
+        id: 'get-ChaosExperimentResourceId'
+        with:
+          inlineScript: echo "ChaosExperimentResourceId"="$(az resource show --resource-group ${{ env.RESOURCE_GROUP_NAME }} --namespace Microsoft.Chaos --resource-type Experiments --name ${{ env.CHAOS_EXPERIMENT_NAME }} --query "id" -o tsv)" >> $GITHUB_OUTPUT
+          
+      - name: Run chaos experiment
+        uses: azure/CLI@v1
+        with:
+          inlineScript: az rest --method post --uri https://management.azure.com${{ steps.get-ChaosExperimentResourceId.outputs.ChaosExperimentResourceId }}/start?api-version=2022-10-01-preview
