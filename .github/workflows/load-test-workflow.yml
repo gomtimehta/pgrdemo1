@@ -1,0 +1,35 @@
+name: LoadTestingWorkflow
+on: 
+  workflow_dispatch:
+    branches:
+      - main
+env:
+  AZURE_WEBAPP_NAME: 'pgrdemo1app'
+  AZURE_WEBAPP_PACKAGE_PATH: '.'
+  AZURE_LOAD_TESTING_RESOURCE_NAME: 'ProgressiveAzureLoadTesting'
+
+    
+jobs:
+  loadtest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Login to Azure
+        uses: azure/login@v1
+        continue-on-error: false
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          
+      - name: Checkout GitHubActions
+        uses: actions/checkout@v3
+
+      - name: 'Azure Load Testing'
+        uses: azure/load-testing@v1
+        with:
+          loadTestConfigFile: 'LoadTestingConfig.yml'
+          loadTestResource: ${{ env.AZURE_LOAD_TESTING_RESOURCE_NAME }}
+          resourceGroup: 'GomtiRG'    
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: Load test results
+          path: ${{github.workspace}}/loadTest 
