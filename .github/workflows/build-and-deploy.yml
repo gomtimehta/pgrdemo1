@@ -1,1 +1,42 @@
+#Workflow name
+name: BuildAndDeploy
 
+#Define the triggers for the workflow
+on:
+  workflow_dispatch:
+    branches:
+      - main
+
+env:
+  DOTNET_VERSION: '6.0.x'
+  WEBAPP_NAME: 'pgrdemoapp1'
+  WEBAPP_PACKAHE_PATH: '.'
+  
+#Create the jobs
+jobs:
+#first job is named build
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup .Net Core
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{env.DOTNET_VERSION}}
+      
+      - name: Restore
+        run: dotnet restore ./pgrdemo1.sln
+
+      - name: Build
+        run: dotnet build ./pgrdemo1.sln --configuration Release --no-restore
+
+      - name: Publish
+        run: dotnet publish --configuration Release --no-build --output ${{env.DOTNET_ROOT}}/myapp
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: .net-app
+          path: ${{env.DOTNET_ROOT}}/myapp
